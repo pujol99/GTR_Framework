@@ -9,15 +9,38 @@ namespace GTR {
 	class Prefab;
 	class Material;
 	
+	class RenderCall
+	{
+	public:
+		float distanceCamera;
+		bool isTransparent;
+		Matrix44 model;
+		Mesh* mesh;
+		GTR::Material* material;
+		Camera* camera;
+		
+		RenderCall(const Matrix44 model, Mesh* mesh, GTR::Material* material, Camera* camera);
+	};
 	// This class is in charge of rendering anything in our system.
 	// Separating the render from anything else makes the code cleaner
 	class Renderer
 	{
 
 	public:
+		std::vector<RenderCall> calls;
 
-		//add here your functions
-		//...
+		void showCalls();
+		void sortCalls();
+		void renderCalls();
+		struct {
+			bool operator()(RenderCall a, RenderCall b) const {
+				if (!b.isTransparent)
+					return false;
+				if (!a.isTransparent)
+					return true;
+				return a.distanceCamera > b.distanceCamera;
+			}
+		} comparator;
 
 		//renders several elements of the scene
 		void renderScene(GTR::Scene* scene, Camera* camera);
@@ -31,6 +54,7 @@ namespace GTR {
 		//to render one mesh given its material and transformation matrix
 		void renderMeshWithMaterial(const Matrix44 model, Mesh* mesh, GTR::Material* material, Camera* camera);
 	};
+
 
 	Texture* CubemapFromHDRE(const char* filename);
 

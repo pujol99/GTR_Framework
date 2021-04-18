@@ -27,6 +27,8 @@ FBO* fbo = nullptr;
 Texture* texture = nullptr;
 
 float cam_speed = 10;
+int tick = 0;
+
 
 Application::Application(int window_width, int window_height, SDL_Window* window)
 {

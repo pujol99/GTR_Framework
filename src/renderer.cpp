@@ -9,9 +9,20 @@
 #include "utils.h"
 #include "scene.h"
 #include "extra/hdre.h"
+#include <algorithm>
 
 
 using namespace GTR;
+
+RenderCall::RenderCall(const Matrix44 model, Mesh* mesh, GTR::Material* material, Camera* camera) {
+	this->model = model;
+	this->mesh = mesh;
+	this->material = material;
+	this->camera = camera;
+
+	this->distanceCamera = this->model.getTranslation().distance(camera->eye);
+	this->isTransparent = (this->material->alpha_mode == GTR::eAlphaMode::BLEND);
+}
 
 void Renderer::renderScene(GTR::Scene* scene, Camera* camera)
 {
@@ -29,6 +40,8 @@ void Renderer::renderScene(GTR::Scene* scene, Camera* camera)
 				renderPrefab(ent->model, pent->prefab, camera);
 		}
 	}
+	sortCalls();
+	renderCalls();
 }
 
 //renders all the prefab
@@ -58,7 +71,8 @@ void Renderer::renderNode(const Matrix44& prefab_model, GTR::Node* node, Camera*
 		if (camera->testBoxInFrustum(world_bounding.center, world_bounding.halfsize) )
 		{
 			//render node mesh
-			renderMeshWithMaterial( node_model, node->mesh, node->material, camera );
+			//renderMeshWithMaterial( node_model, node->mesh, node->material, camera );
+			calls.push_back(RenderCall( node_model, node->mesh, node->material, camera ));
 			//node->mesh->renderBounding(node_model, true);
 		}
 	}
@@ -118,7 +132,7 @@ void Renderer::renderMeshWithMaterial(const Matrix44 model, Mesh* mesh, GTR::Mat
 	shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
 	shader->setUniform("u_camera_position", camera->eye);
 	shader->setUniform("u_model", model );
-	float t = getTime();
+	float t = GetTickCount();
 	shader->setUniform("u_time", t );
 
 	shader->setUniform("u_color", material->color);
@@ -136,6 +150,23 @@ void Renderer::renderMeshWithMaterial(const Matrix44 model, Mesh* mesh, GTR::Mat
 
 	//set the render state as it was before to avoid problems with future renders
 	glDisable(GL_BLEND);
+}
+
+void Renderer::showCalls() {
+	for (int i = 0; i < calls.size(); i++) {
+		if (calls[i].isTransparent)
+			std::cout << calls[i].distanceCamera << std::endl;
+	}
+}
+
+void Renderer::renderCalls() {
+	for (int i = 0; i < calls.size(); i++)
+		renderMeshWithMaterial(calls[i].model, calls[i].mesh, calls[i].material, calls[i].camera);
+	calls.clear();
+}
+
+void Renderer::sortCalls() {
+	std::sort(calls.begin(), calls.end(), comparator);
 }
 
 
