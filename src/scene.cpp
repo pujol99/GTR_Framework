@@ -48,6 +48,10 @@ bool GTR::Scene::load(const char* filename)
 		return false;
 	}
 
+	//read global properties
+	background_color = readJSONVector3(json, "background_color", background_color);
+	ambient_light = readJSONVector3(json, "ambient_light", ambient_light);
+
 	//entities
 	cJSON* entities_json = cJSON_GetObjectItemCaseSensitive(json, "entities");
 	cJSON* entity_json;
@@ -58,7 +62,8 @@ bool GTR::Scene::load(const char* filename)
 		if (!ent)
 		{
 			std::cout << " - ENTITY TYPE UNKNOWN: " << type_str << std::endl;
-			continue;
+			//continue;
+			ent = new BaseEntity();
 		}
 
 		addEntity(ent);
@@ -107,10 +112,22 @@ bool GTR::Scene::load(const char* filename)
 	return true;
 }
 
+GTR::LightEntity* GTR::Scene::getALight() {
+	for (int i = 0; i < entities.size(); i++) {
+		if (entities[i]->entity_type == LIGHT) {
+			return (LightEntity*) entities[i];
+		}
+	}
+	return NULL;
+}
+
 GTR::BaseEntity* GTR::Scene::createEntity(std::string type)
 {
 	if (type == "PREFAB")
 		return new GTR::PrefabEntity();
+	if (type == "LIGHT")
+		return new GTR::LightEntity();
+    return NULL;
 }
 
 void GTR::BaseEntity::renderInMenu()
@@ -122,9 +139,6 @@ void GTR::BaseEntity::renderInMenu()
 	ImGuiMatrix44(model, "Model");
 #endif
 }
-
-
-
 
 GTR::PrefabEntity::PrefabEntity()
 {
@@ -153,5 +167,31 @@ void GTR::PrefabEntity::renderInMenu()
 		ImGui::TreePop();
 	}
 #endif
+}
+
+GTR::LightEntity::LightEntity()
+{
+	entity_type = LIGHT;
+	light_type = POINT;
+	light = new Light();
+}
+
+
+void GTR::LightEntity::renderInMenu()
+{
+	BaseEntity::renderInMenu();
+
+#ifndef SKIP_IMGUI
+	if (light)
+		light->renderInMenu();
+#endif
+}
+
+void GTR::LightEntity::configure(cJSON* json)
+{
+	if (cJSON_GetObjectItem(json, "color"))
+	{
+		light->light_color = readJSONVector3(json, "color", Vector3());
+	}
 }
 

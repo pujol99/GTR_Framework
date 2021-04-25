@@ -110,10 +110,21 @@ namespace GTR {
 		void updateNodesByName();
 		Node* getNodeByName(const char* name);
 
-				//Manager to cache loaded prefabs
+		//Manager to cache loaded prefabs
 		static std::map<std::string, Prefab*> sPrefabsLoaded;
 		static Prefab* Get(const char* filename);
 		void registerPrefab(std::string name);
+	};
+
+	class Light 
+	{
+	public:
+		Vector3 light_color;
+
+		Light();
+		~Light();
+
+		void renderInMenu();
 	};
 
 };

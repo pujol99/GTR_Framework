@@ -7,6 +7,7 @@ class Camera;
 namespace GTR {
 
 	class Prefab;
+	class Light;
 	class Material;
 	
 	class RenderCall
@@ -14,12 +15,11 @@ namespace GTR {
 	public:
 		float distanceCamera;
 		bool isTransparent;
+
 		Matrix44 model;
-		Mesh* mesh;
-		GTR::Material* material;
-		Camera* camera;
+		GTR::Node* node;
 		
-		RenderCall(const Matrix44 model, Mesh* mesh, GTR::Material* material, Camera* camera);
+		RenderCall(const Matrix44 model, GTR::Node* node, float distanceCamera);
 	};
 	// This class is in charge of rendering anything in our system.
 	// Separating the render from anything else makes the code cleaner
@@ -27,18 +27,18 @@ namespace GTR {
 	{
 
 	public:
-		std::vector<RenderCall> calls;
+		std::vector<RenderCall*> calls;
 
-		void showCalls();
+
+		void renderCalls(Camera* camera);
 		void sortCalls();
-		void renderCalls();
 		struct {
-			bool operator()(RenderCall a, RenderCall b) const {
-				if (!b.isTransparent)
+			bool operator()(RenderCall* a, RenderCall* b) const {
+				if (!b->isTransparent)
 					return false;
-				if (!a.isTransparent)
+				if (!a->isTransparent)
 					return true;
-				return a.distanceCamera > b.distanceCamera;
+				return a->distanceCamera > b->distanceCamera;
 			}
 		} comparator;
 

@@ -14,18 +14,24 @@
 
 using namespace GTR;
 
-RenderCall::RenderCall(const Matrix44 model, Mesh* mesh, GTR::Material* material, Camera* camera) {
+RenderCall::RenderCall(const Matrix44 model, GTR::Node* node, float distanceCamera) {
 	this->model = model;
-	this->mesh = mesh;
-	this->material = material;
-	this->camera = camera;
+	this->node = node;
 
-	this->distanceCamera = this->model.getTranslation().distance(camera->eye);
-	this->isTransparent = (this->material->alpha_mode == GTR::eAlphaMode::BLEND);
+	this->distanceCamera = distanceCamera;
+	this->isTransparent = (this->node->material->alpha_mode == GTR::eAlphaMode::BLEND);
 }
 
 void Renderer::renderScene(GTR::Scene* scene, Camera* camera)
 {
+	//set the clear color (the background color)
+	glClearColor(scene->background_color.x, scene->background_color.y, scene->background_color.z, 1.0);
+
+	// Clear the color and the depth buffer
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	checkGLErrors();
+
+	//render entities
 	for (int i = 0; i < scene->entities.size(); ++i)
 	{
 		BaseEntity* ent = scene->entities[i];
@@ -41,7 +47,7 @@ void Renderer::renderScene(GTR::Scene* scene, Camera* camera)
 		}
 	}
 	sortCalls();
-	renderCalls();
+	renderCalls(camera);
 }
 
 //renders all the prefab
@@ -70,9 +76,10 @@ void Renderer::renderNode(const Matrix44& prefab_model, GTR::Node* node, Camera*
 		//if bounding box is inside the camera frustum then the object is probably visible
 		if (camera->testBoxInFrustum(world_bounding.center, world_bounding.halfsize) )
 		{
-			//render node mesh
-			//renderMeshWithMaterial( node_model, node->mesh, node->material, camera );
-			calls.push_back(RenderCall( node_model, node->mesh, node->material, camera ));
+			calls.push_back(new RenderCall( 
+				node_model, 
+				node, 
+				node_model.getTranslation().distance(camera->eye)));
 			//node->mesh->renderBounding(node_model, true);
 		}
 	}
@@ -93,14 +100,15 @@ void Renderer::renderMeshWithMaterial(const Matrix44 model, Mesh* mesh, GTR::Mat
 	//define locals to simplify coding
 	Shader* shader = NULL;
 	Texture* texture = NULL;
+	LightEntity* elight = NULL;
 
 	texture = material->color_texture.texture;
-	//texture = material->emissive_texture;
-	//texture = material->metallic_roughness_texture;
-	//texture = material->normal_texture;
-	//texture = material->occlusion_texture;
 	if (texture == NULL)
 		texture = Texture::getWhiteTexture(); //a 1x1 white texture
+
+	elight = GTR::Scene::instance->getALight();
+	if (elight == NULL)
+		return;
 
 	//select the blending
 	if (material->alpha_mode == GTR::eAlphaMode::BLEND)
@@ -119,7 +127,7 @@ void Renderer::renderMeshWithMaterial(const Matrix44 model, Mesh* mesh, GTR::Mat
     assert(glGetError() == GL_NO_ERROR);
 
 	//chose a shader
-	shader = Shader::Get("texture");
+	shader = Shader::Get("phong");
 
     assert(glGetError() == GL_NO_ERROR);
 
@@ -134,6 +142,11 @@ void Renderer::renderMeshWithMaterial(const Matrix44 model, Mesh* mesh, GTR::Mat
 	shader->setUniform("u_model", model );
 	float t = GetTickCount();
 	shader->setUniform("u_time", t );
+
+	shader->setUniform("u_ambient_light", GTR::Scene::instance->ambient_light);
+	shader->setUniform("u_light_color", elight->light->light_color);
+	shader->setUniform("u_light_position", elight->model.getTranslation());
+	shader->setUniform("u_light_type", 1);
 
 	shader->setUniform("u_color", material->color);
 	if(texture)
@@ -152,16 +165,9 @@ void Renderer::renderMeshWithMaterial(const Matrix44 model, Mesh* mesh, GTR::Mat
 	glDisable(GL_BLEND);
 }
 
-void Renderer::showCalls() {
-	for (int i = 0; i < calls.size(); i++) {
-		if (calls[i].isTransparent)
-			std::cout << calls[i].distanceCamera << std::endl;
-	}
-}
-
-void Renderer::renderCalls() {
+void Renderer::renderCalls(Camera* camera) {
 	for (int i = 0; i < calls.size(); i++)
-		renderMeshWithMaterial(calls[i].model, calls[i].mesh, calls[i].material, calls[i].camera);
+		renderMeshWithMaterial(calls[i]->model, calls[i]->node->mesh, calls[i]->node->material, camera);
 	calls.clear();
 }
 

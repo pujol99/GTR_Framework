@@ -249,3 +249,13 @@ void Prefab::updateNodesByName()
 	nodes_by_name.clear();
 	updateInDepth(nodes_by_name, &root);
 }
+
+Light::Light(){}
+Light::~Light(){}
+
+void Light::renderInMenu()
+{
+#ifndef SKIP_IMGUI
+	ImGui::ColorEdit4("Light Color", light_color.v);
+#endif
+}
