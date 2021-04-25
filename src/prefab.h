@@ -120,11 +120,13 @@ namespace GTR {
 	{
 	public:
 		Vector3 light_color;
+		Vector3 light_direction;
 
 		Light();
 		~Light();
 
 		void renderInMenu();
+		void setUniforms(Shader* shader);
 	};
 
 };

@@ -112,13 +112,22 @@ bool GTR::Scene::load(const char* filename)
 	return true;
 }
 
-GTR::LightEntity* GTR::Scene::getALight() {
+void GTR::Scene::setUniforms(Shader* shader, bool firstIteration) {
+	if(firstIteration)
+		shader->setUniform("u_ambient_light", ambient_light);
+	else
+		shader->setUniform("u_ambient_light", Vector3(0.0, 0.0, 0.0));
+
+}
+
+std::vector<GTR::LightEntity*> GTR::Scene::getLights(){
+	std::vector<LightEntity*> lights;
 	for (int i = 0; i < entities.size(); i++) {
 		if (entities[i]->entity_type == LIGHT) {
-			return (LightEntity*) entities[i];
+			lights.push_back((LightEntity*) entities[i]);
 		}
 	}
-	return NULL;
+	return lights;
 }
 
 GTR::BaseEntity* GTR::Scene::createEntity(std::string type)
@@ -172,7 +181,6 @@ void GTR::PrefabEntity::renderInMenu()
 GTR::LightEntity::LightEntity()
 {
 	entity_type = LIGHT;
-	light_type = POINT;
 	light = new Light();
 }
 
@@ -193,5 +201,29 @@ void GTR::LightEntity::configure(cJSON* json)
 	{
 		light->light_color = readJSONVector3(json, "color", Vector3());
 	}
+	if (cJSON_GetObjectItem(json, "direction"))
+	{
+		light->light_direction = readJSONVector3(json, "direction", Vector3());
+	}
+	if (cJSON_GetObjectItem(json, "lightType"))
+	{
+		std::string type = cJSON_GetObjectItem(json, "lightType")->valuestring;
+		if (type == "POINT")
+			light_type = POINT;
+		else if (type == "DIRECTIONAL")
+			light_type = DIRECTIONAL;
+		else
+			light_type = DIRECTIONAL;
+	}
 }
+
+void GTR::LightEntity::setUniforms(Shader* shader) {
+	shader->setUniform("u_light_color", light->light_color);
+	shader->setUniform("u_light_position", model.getTranslation());
+	shader->setUniform("u_light_type", light_type);
+	if (light_type == DIRECTIONAL)
+		shader->setUniform("u_light_direction", light->light_direction);
+}
+
+
 

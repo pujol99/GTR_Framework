@@ -2,10 +2,12 @@
 #define SCENE_H
 
 #include "framework.h"
+#include "shader.h"
 #include <string>
 
 //forward declaration
 class cJSON; 
+class Shader;
 
 
 //our namespace
@@ -64,6 +66,7 @@ namespace GTR {
 
 		virtual void renderInMenu();
 		virtual void configure(cJSON* json);
+		void setUniforms(Shader* shader);
 	};
 	//contains all entities of the scene
 	class Scene
@@ -84,7 +87,8 @@ namespace GTR {
 
 		bool load(const char* filename);
 		BaseEntity* createEntity(std::string type);
-		LightEntity* getALight();
+		std::vector<LightEntity*> getLights();
+		void setUniforms(Shader* shader, bool firstIteration);
 	};
 
 };

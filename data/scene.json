@@ -1,6 +1,6 @@
 {
 	"background_color":[0.3,0.3,0.3],
-	"ambient_light":[1,1,1],
+	"ambient_light":[0.4, 0.3, 0.1],
 	"entities":[
 		{
 			"name":"floor",
@@ -33,8 +33,18 @@
 		{
 			"name":"light1",
 			"type":"LIGHT",
+			"lightType": "POINT",
 			"position": [0, 80, 0],
+			"direction": [1.0, 0.0, 0.0],
 			"color": [0.3,0.2,0.7]
+		},
+		{
+			"name":"light2",
+			"type":"LIGHT",
+			"lightType": "POINT",
+			"position": [90, 80, 0],
+			"direction": [1.0, 0.0, 0.0],
+			"color": [0.7,0.2,0.3]
 		}
 ]
 }

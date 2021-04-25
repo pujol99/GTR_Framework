@@ -8,6 +8,9 @@
 #define CAMERA_H
 
 #include "framework.h"
+#include "shader.h"
+
+class Shader;
 
 class Camera
 {
@@ -79,6 +82,7 @@ public:
 	bool testPointInFrustum( Vector3 v );
 	char testSphereInFrustum( const Vector3& v, float radius);
 	char testBoxInFrustum( const Vector3& center, const Vector3& halfsize );
+	void setUniforms(Shader* shader);
 };
 
 

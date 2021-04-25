@@ -259,3 +259,5 @@ void Light::renderInMenu()
 	ImGui::ColorEdit4("Light Color", light_color.v);
 #endif
 }
+
+

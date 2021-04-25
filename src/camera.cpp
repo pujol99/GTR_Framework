@@ -387,3 +387,8 @@ char Camera::testBoxInFrustum(const Vector3& center, const Vector3& halfsize)
 	return o == 0 ? CLIP_INSIDE : CLIP_OVERLAP;
 }
 
+void Camera::setUniforms(Shader* shader) {
+	shader->setUniform("u_viewprojection", viewprojection_matrix);
+	shader->setUniform("u_camera_position", eye);
+}
+

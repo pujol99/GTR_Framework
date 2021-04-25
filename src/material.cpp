@@ -75,3 +75,9 @@ void Material::renderInMenu()
 	}
 #endif
 }
+
+void Material::setUniforms(Shader* shader) {
+	shader->setUniform("u_color", color);
+	//this is used to say which is the alpha threshold to what we should not paint a pixel on the screen (to cut polygons according to texture alpha)
+	shader->setUniform("u_alpha_cutoff", alpha_mode == GTR::eAlphaMode::MASK ? alpha_cutoff : 0);
+}

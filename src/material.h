@@ -1,6 +1,7 @@
 #pragma once
 
 #include "framework.h"
+#include "shader.h"
 #include <cassert>
 #include <map>
 #include <string>
@@ -8,6 +9,7 @@
 //forward declaration
 class Mesh;
 class Texture;
+class Shader;
 
 namespace GTR {
 
@@ -74,5 +76,6 @@ namespace GTR {
 		static void Release();
 
 		void renderInMenu();
+		void setUniforms(Shader* shader);
 	};
 };

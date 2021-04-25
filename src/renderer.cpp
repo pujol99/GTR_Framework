@@ -89,30 +89,14 @@ void Renderer::renderNode(const Matrix44& prefab_model, GTR::Node* node, Camera*
 		renderNode(prefab_model, node->children[i], camera);
 }
 
-//renders a mesh given its transform and material
-void Renderer::renderMeshWithMaterial(const Matrix44 model, Mesh* mesh, GTR::Material* material, Camera* camera)
-{
+bool initRender(GTR::Material* material, Mesh* mesh) {
 	//in case there is nothing to do
-	if (!mesh || !mesh->getNumVertices() || !material )
-		return;
-    assert(glGetError() == GL_NO_ERROR);
-
-	//define locals to simplify coding
-	Shader* shader = NULL;
-	Texture* texture = NULL;
-	LightEntity* elight = NULL;
-
-	texture = material->color_texture.texture;
-	if (texture == NULL)
-		texture = Texture::getWhiteTexture(); //a 1x1 white texture
-
-	elight = GTR::Scene::instance->getALight();
-	if (elight == NULL)
-		return;
+	if (!mesh || !mesh->getNumVertices() || !material)
+		return false;
+	assert(glGetError() == GL_NO_ERROR);
 
 	//select the blending
-	if (material->alpha_mode == GTR::eAlphaMode::BLEND)
-	{
+	if (material->alpha_mode == GTR::eAlphaMode::BLEND) {
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	}
@@ -120,48 +104,58 @@ void Renderer::renderMeshWithMaterial(const Matrix44 model, Mesh* mesh, GTR::Mat
 		glDisable(GL_BLEND);
 
 	//select if render both sides of the triangles
-	if(material->two_sided)
+	if (material->two_sided)
 		glDisable(GL_CULL_FACE);
 	else
 		glEnable(GL_CULL_FACE);
-    assert(glGetError() == GL_NO_ERROR);
 
-	//chose a shader
-	shader = Shader::Get("phong");
+	assert(glGetError() == GL_NO_ERROR);
+	return true;
+}
 
-    assert(glGetError() == GL_NO_ERROR);
+//renders a mesh given its transform and material
+void Renderer::renderMeshWithMaterial(const Matrix44 model, Mesh* mesh, GTR::Material* material, Camera* camera)
+{
+	if (!initRender(material, mesh))
+		return;
 
-	//no shader? then nothing to render
+	float time = GetTickCount();
+	Shader* shader = Shader::Get("phong");
 	if (!shader)
 		return;
+	Texture* texture = material->color_texture.texture;
+	if (!texture)
+		texture = Texture::getWhiteTexture();
+
 	shader->enable();
 
 	//upload uniforms
-	shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
-	shader->setUniform("u_camera_position", camera->eye);
-	shader->setUniform("u_model", model );
-	float t = GetTickCount();
-	shader->setUniform("u_time", t );
+	camera->setUniforms(shader);
+	shader->setUniform("u_model", model);
+	shader->setUniform("u_time", time);
+	material->setUniforms(shader);
+	shader->setUniform("u_texture", texture, 0);
 
-	shader->setUniform("u_ambient_light", GTR::Scene::instance->ambient_light);
-	shader->setUniform("u_light_color", elight->light->light_color);
-	shader->setUniform("u_light_position", elight->model.getTranslation());
-	shader->setUniform("u_light_type", 1);
+	std::vector< LightEntity*> lights = GTR::Scene::instance->getLights();
+	for (int i = 0; i < lights.size(); i++) {
+		if (i == 0)
+			GTR::Scene::instance->setUniforms(shader, true);
+		else {
+			glDepthFunc(GL_LEQUAL);
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+			glEnable(GL_BLEND);
+			GTR::Scene::instance->setUniforms(shader, false);
+		}
 
-	shader->setUniform("u_color", material->color);
-	if(texture)
-		shader->setUniform("u_texture", texture, 0);
+		lights[i]->setUniforms(shader);
 
-	//this is used to say which is the alpha threshold to what we should not paint a pixel on the screen (to cut polygons according to texture alpha)
-	shader->setUniform("u_alpha_cutoff", material->alpha_mode == GTR::eAlphaMode::MASK ? material->alpha_cutoff : 0);
+		//do the draw call that renders the mesh into the screen
+		mesh->render(GL_TRIANGLES);
+	}
 
-	//do the draw call that renders the mesh into the screen
-	mesh->render(GL_TRIANGLES);
-
-	//disable shader
 	shader->disable();
-
-	//set the render state as it was before to avoid problems with future renders
+	glDisable(GL_BLEND);
+	glDepthFunc(GL_LESS); //as default
 	glDisable(GL_BLEND);
 }
 

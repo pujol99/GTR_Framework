@@ -246,6 +246,7 @@ uniform vec3 u_ambient_light;
 uniform vec3 u_light_color;
 uniform int u_light_type;
 uniform vec3 u_light_position;
+uniform vec3 u_light_direction;
 
 out vec4 FragColor;
 
@@ -261,7 +262,10 @@ void main()
 	light += u_ambient_light;
 	vec3 N = normalize(v_normal);
 	vec3 L;
-	if(u_light_type != 0){
+	if(u_light_type == 0){
+		L = u_light_direction;
+	}
+	else if(u_light_type == 1){
 		L = normalize(u_light_position - v_world_position);
 	}
 	
