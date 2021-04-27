@@ -238,6 +238,8 @@ in vec4 v_color;
 
 uniform vec4 u_color;
 uniform sampler2D u_texture;
+uniform sampler2D u_emissive_texture;
+uniform vec3 u_emissive_factor;
 
 uniform float u_time;
 uniform float u_alpha_cutoff;
@@ -247,6 +249,9 @@ uniform vec3 u_light_color;
 uniform int u_light_type;
 uniform vec3 u_light_position;
 uniform vec3 u_light_direction;
+uniform float u_light_intensity;
+uniform float u_light_cone_angle;
+uniform float u_light_max_distance;
 
 out vec4 FragColor;
 
@@ -254,27 +259,40 @@ void main()
 {
 	vec2 uv = v_uv;
 	vec4 color = u_color;
+	
 	color *= texture( u_texture, v_uv );
 	if(color.a < u_alpha_cutoff)
 		discard;
 	
-	vec3 light = vec3(0.0);
-	light += u_ambient_light;
 	vec3 N = normalize(v_normal);
 	vec3 L;
 	if(u_light_type == 0){
-		L = u_light_direction;
-	}
-	else if(u_light_type == 1){
-		L = normalize(u_light_position - v_world_position);
-	}
+		L = u_light_direction;}
+	else if(u_light_type > 0){
+		L = normalize(u_light_position - v_world_position);}
 	
-	
-	float NdotL = dot(N,L);
-	NdotL = clamp(NdotL, 0.0, 1.0);
+	float NdotL;
+	if(u_light_type < 2){
+		NdotL = dot(N,L);
+		NdotL = clamp(NdotL, 0.0, 1.0);
+	}else{
+		NdotL = dot(u_light_direction,-L);
+		NdotL = clamp(NdotL, 0.0, 1.0);
+		NdotL = (NdotL - u_light_cone_angle)/(1.0 - u_light_cone_angle);}
+
+	vec3 light = vec3(0.0);
 	light += NdotL * u_light_color;
+	light *= u_light_intensity;
 	
+	float distance = distance(u_light_position, v_world_position);
+	if(distance < u_light_max_distance){
+		light *= 1.0-(distance/u_light_max_distance);}
+	else{
+		light = vec3(0.0);}
+	
+	light += u_ambient_light;
 	color.xyz *= light;
+	color.xyz += texture( u_emissive_texture, v_uv ).xyz * u_emissive_factor;
 
 	FragColor = color;
 }

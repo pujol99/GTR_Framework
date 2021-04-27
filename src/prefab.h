@@ -122,6 +122,11 @@ namespace GTR {
 		Vector3 light_color;
 		Vector3 light_direction;
 
+		float intensity;
+		float max_distance;
+		float cone_angle;
+		float area_size;
+
 		Light();
 		~Light();
 

@@ -16,7 +16,7 @@ namespace GTR {
 		float distanceCamera;
 		bool isTransparent;
 
-		Matrix44 model;
+		Matrix44 model; //model precomputated
 		GTR::Node* node;
 		
 		RenderCall(const Matrix44 model, GTR::Node* node, float distanceCamera);

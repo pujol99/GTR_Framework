@@ -1,11 +1,12 @@
 {
-	"background_color":[0.3,0.3,0.3],
-	"ambient_light":[0.4, 0.3, 0.1],
+	"background_color":[0.2,0.2,0.8],
+	"ambient_light":[0.1, 0.1, 0.1],
 	"entities":[
 		{
 			"name":"floor",
 			"type":"PREFAB",
 			"filename":"prefabs/floor.glb",
+			"scale": [2.0, 1.0, 2.0],
 			"position":[0,-0.1,0]
 		},
 		{
@@ -13,6 +14,20 @@
 			"type":"PREFAB",
 			"filename":"prefabs/gmc/scene.gltf",
 			"position":[-80,0,-100],
+			"angle":-45
+		},
+		{
+			"name":"car2",
+			"type":"PREFAB",
+			"filename":"prefabs/gmc/scene.gltf",
+			"position":[53,0,265],
+			"angle":-32
+		},
+		{
+			"name":"car3",
+			"type":"PREFAB",
+			"filename":"prefabs/gmc/scene.gltf",
+			"position":[113,0,-218],
 			"angle":-45
 		},
 		{
@@ -34,17 +49,56 @@
 			"name":"light1",
 			"type":"LIGHT",
 			"lightType": "POINT",
-			"position": [0, 80, 0],
+			"position": [-172, 30, -196],
 			"direction": [1.0, 0.0, 0.0],
-			"color": [0.3,0.2,0.7]
+			"color": [1.0, 0.0, 0.0],
+			"intensity": 1.0,
+			"max_distance": 800.0,
+			"cone_angle": 0.5
 		},
 		{
 			"name":"light2",
 			"type":"LIGHT",
 			"lightType": "POINT",
-			"position": [90, 80, 0],
+			"position": [227, 423, 465],
 			"direction": [1.0, 0.0, 0.0],
-			"color": [0.7,0.2,0.3]
+			"color": [0.8,0.3,0.0],
+			"intensity": 1.0,
+			"max_distance": 800.0,
+			"cone_angle": 0.5
+		},
+		{
+			"name":"light3",
+			"type":"LIGHT",
+			"lightType": "POINT",
+			"position": [14, 14, -23],
+			"direction": [1.0, 0.0, 0.0],
+			"color": [1.0, 1.0, 1.0],
+			"intensity": 1.0,
+			"max_distance": 800.0,
+			"cone_angle": 0.5
+		},
+		{
+			"name":"light4",
+			"type":"LIGHT",
+			"lightType": "SPOT",
+			"position": [14, 14, -23],
+			"direction": [1.0, 0.0, 0.0],
+			"color": [1.0, 1.0, 1.0],
+			"intensity": 1.0,
+			"max_distance": 800.0,
+			"cone_angle": 0.992
+		},
+		{
+			"name":"light5",
+			"type":"LIGHT",
+			"lightType": "DIRECTIONAL",
+			"position": [114, 14, -23],
+			"direction": [1.0, 0.0, 0.0],
+			"color": [1.0, 0.0, 0.0],
+			"intensity": 1.0,
+			"max_distance": 800.0,
+			"cone_angle": 0.992
 		}
 ]
 }

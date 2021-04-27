@@ -195,35 +195,42 @@ void GTR::LightEntity::renderInMenu()
 #endif
 }
 
+void GTR::LightEntity::setLightType(std::string type) {
+	if (type == "POINT")
+		light_type = POINT;
+	else if (type == "DIRECTIONAL")
+		light_type = DIRECTIONAL;
+	else if (type == "SPOT")
+		light_type = SPOT;
+}
+
 void GTR::LightEntity::configure(cJSON* json)
 {
 	if (cJSON_GetObjectItem(json, "color"))
-	{
 		light->light_color = readJSONVector3(json, "color", Vector3());
-	}
-	if (cJSON_GetObjectItem(json, "direction"))
-	{
-		light->light_direction = readJSONVector3(json, "direction", Vector3());
-	}
+	if (cJSON_GetObjectItem(json, "intensity"))
+		light->intensity = cJSON_GetObjectItem(json, "intensity")->valuedouble;
+	if (cJSON_GetObjectItem(json, "max_distance"))
+		light->max_distance = cJSON_GetObjectItem(json, "max_distance")->valuedouble; 
+	if (cJSON_GetObjectItem(json, "cone_angle"))
+		light->cone_angle = cJSON_GetObjectItem(json, "cone_angle")->valuedouble;
+	if (cJSON_GetObjectItem(json, "direction")) {
+		light->light_direction = readJSONVector3(json, "direction", Vector3());}
 	if (cJSON_GetObjectItem(json, "lightType"))
-	{
-		std::string type = cJSON_GetObjectItem(json, "lightType")->valuestring;
-		if (type == "POINT")
-			light_type = POINT;
-		else if (type == "DIRECTIONAL")
-			light_type = DIRECTIONAL;
-		else
-			light_type = DIRECTIONAL;
-	}
+		setLightType(cJSON_GetObjectItem(json, "lightType")->valuestring);
 }
 
-void GTR::LightEntity::setUniforms(Shader* shader) {
+void GTR::LightEntity::setUniforms(Shader* shader, Camera* camera) {
 	shader->setUniform("u_light_color", light->light_color);
-	shader->setUniform("u_light_position", model.getTranslation());
 	shader->setUniform("u_light_type", light_type);
-	if (light_type == DIRECTIONAL)
-		shader->setUniform("u_light_direction", light->light_direction);
+	shader->setUniform("u_light_intensity", light->intensity);
+	shader->setUniform("u_light_cone_angle", light->cone_angle);
+	shader->setUniform("u_light_max_distance", light->max_distance);
+	if (light_type != SPOT) {
+		shader->setUniform("u_light_position", model.getTranslation());
+		shader->setUniform("u_light_direction", light->light_direction);}
+	else {
+		shader->setUniform("u_light_direction", normalize(camera->center - camera->eye));
+		shader->setUniform("u_light_position", camera->eye);}
 }
-
-
 

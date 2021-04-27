@@ -3,6 +3,7 @@
 
 #include "framework.h"
 #include "shader.h"
+#include "camera.h"
 #include <string>
 
 //forward declaration
@@ -21,7 +22,12 @@ namespace GTR {
 		REFLECTION_PROBE = 4,
 		DECALL = 5
 	};
-	enum eLightType { DIRECTIONAL = 0, POINT = 1};
+
+	enum eLightType { 
+		DIRECTIONAL = 0, 
+		POINT = 1, 
+		SPOT = 2
+	};
 
 	class Scene;
 	class Prefab;
@@ -66,7 +72,8 @@ namespace GTR {
 
 		virtual void renderInMenu();
 		virtual void configure(cJSON* json);
-		void setUniforms(Shader* shader);
+		void setUniforms(Shader* shader, Camera* camera);
+		void setLightType(std::string type);
 	};
 	//contains all entities of the scene
 	class Scene

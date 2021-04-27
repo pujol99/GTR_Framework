@@ -126,6 +126,9 @@ void Renderer::renderMeshWithMaterial(const Matrix44 model, Mesh* mesh, GTR::Mat
 	Texture* texture = material->color_texture.texture;
 	if (!texture)
 		texture = Texture::getWhiteTexture();
+	Texture* emissive_texture = material->emissive_texture.texture;
+	if (!emissive_texture)
+		emissive_texture = Texture::getWhiteTexture();
 
 	shader->enable();
 
@@ -135,6 +138,9 @@ void Renderer::renderMeshWithMaterial(const Matrix44 model, Mesh* mesh, GTR::Mat
 	shader->setUniform("u_time", time);
 	material->setUniforms(shader);
 	shader->setUniform("u_texture", texture, 0);
+	shader->setUniform("u_emissive_texture", emissive_texture, 1);
+	shader->setUniform("u_emissive_factor", material->emissive_factor);
+
 
 	std::vector< LightEntity*> lights = GTR::Scene::instance->getLights();
 	for (int i = 0; i < lights.size(); i++) {
@@ -146,8 +152,7 @@ void Renderer::renderMeshWithMaterial(const Matrix44 model, Mesh* mesh, GTR::Mat
 			glEnable(GL_BLEND);
 			GTR::Scene::instance->setUniforms(shader, false);
 		}
-
-		lights[i]->setUniforms(shader);
+		lights[i]->setUniforms(shader, camera);
 
 		//do the draw call that renders the mesh into the screen
 		mesh->render(GL_TRIANGLES);
@@ -155,7 +160,7 @@ void Renderer::renderMeshWithMaterial(const Matrix44 model, Mesh* mesh, GTR::Mat
 
 	shader->disable();
 	glDisable(GL_BLEND);
-	glDepthFunc(GL_LESS); //as default
+	glDepthFunc(GL_LESS);
 	glDisable(GL_BLEND);
 }
 

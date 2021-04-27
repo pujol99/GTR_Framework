@@ -116,7 +116,7 @@ void Application::render(void)
 void Application::update(double seconds_elapsed)
 {
 	float speed = seconds_elapsed * cam_speed; //the speed is defined by the seconds_elapsed so it goes constant
-	float orbit_speed = seconds_elapsed * 0.5;
+	float orbit_speed = seconds_elapsed * 2;
 	
 	//async input to move the camera around
 	if (Input::isKeyPressed(SDL_SCANCODE_LSHIFT)) speed *= 10; //move faster with left shift

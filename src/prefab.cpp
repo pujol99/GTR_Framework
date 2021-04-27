@@ -250,13 +250,23 @@ void Prefab::updateNodesByName()
 	updateInDepth(nodes_by_name, &root);
 }
 
-Light::Light(){}
+Light::Light(){
+	light_direction = Vector3();
+	light_color = Vector3();
+	intensity = 0.0f;
+	max_distance = 0.0f;
+	cone_angle = 0.0f;
+}
 Light::~Light(){}
 
 void Light::renderInMenu()
 {
 #ifndef SKIP_IMGUI
 	ImGui::ColorEdit4("Light Color", light_color.v);
+	ImGui::DragFloat3("Light direction", light_direction.v);
+	ImGui::SliderFloat("Intensity", &intensity, 0.0, 1.0);
+	ImGui::SliderFloat("Max distance", &max_distance, 10, 10000);
+	ImGui::SliderFloat("Cone angle", &cone_angle, 0.0, 1.0);
 #endif
 }
 
