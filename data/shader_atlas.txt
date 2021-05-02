@@ -239,6 +239,8 @@ in vec4 v_color;
 uniform vec4 u_color;
 uniform sampler2D u_texture;
 uniform sampler2D u_emissive_texture;
+uniform sampler2D u_occlusion_texture;
+uniform sampler2D u_metallic_roughness_texture;
 uniform vec3 u_emissive_factor;
 
 uniform float u_time;
@@ -292,7 +294,9 @@ void main()
 	
 	light += u_ambient_light;
 	color.xyz *= light;
+	//color.xyz *= texture( u_occlusion_texture, v_uv ).xyz;
 	color.xyz += texture( u_emissive_texture, v_uv ).xyz * u_emissive_factor;
+	
 
 	FragColor = color;
 }

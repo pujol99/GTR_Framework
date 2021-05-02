@@ -1,6 +1,6 @@
 {
 	"background_color":[0.2,0.2,0.8],
-	"ambient_light":[0.1, 0.1, 0.1],
+	"ambient_light":[0.6, 0.6, 0.6],
 	"entities":[
 		{
 			"name":"floor",
@@ -14,20 +14,6 @@
 			"type":"PREFAB",
 			"filename":"prefabs/gmc/scene.gltf",
 			"position":[-80,0,-100],
-			"angle":-45
-		},
-		{
-			"name":"car2",
-			"type":"PREFAB",
-			"filename":"prefabs/gmc/scene.gltf",
-			"position":[53,0,265],
-			"angle":-32
-		},
-		{
-			"name":"car3",
-			"type":"PREFAB",
-			"filename":"prefabs/gmc/scene.gltf",
-			"position":[113,0,-218],
 			"angle":-45
 		},
 		{

@@ -226,11 +226,9 @@ void GTR::LightEntity::setUniforms(Shader* shader, Camera* camera) {
 	shader->setUniform("u_light_intensity", light->intensity);
 	shader->setUniform("u_light_cone_angle", light->cone_angle);
 	shader->setUniform("u_light_max_distance", light->max_distance);
-	if (light_type != SPOT) {
-		shader->setUniform("u_light_position", model.getTranslation());
-		shader->setUniform("u_light_direction", light->light_direction);}
-	else {
-		shader->setUniform("u_light_direction", normalize(camera->center - camera->eye));
-		shader->setUniform("u_light_position", camera->eye);}
+	shader->setUniform("u_light_position", model.getTranslation());
+	shader->setUniform("u_light_direction", light->light_direction);
+
+
 }
 

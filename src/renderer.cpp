@@ -113,33 +113,45 @@ bool initRender(GTR::Material* material, Mesh* mesh) {
 	return true;
 }
 
-//renders a mesh given its transform and material
-void Renderer::renderMeshWithMaterial(const Matrix44 model, Mesh* mesh, GTR::Material* material, Camera* camera)
-{
-	if (!initRender(material, mesh))
-		return;
-
-	float time = GetTickCount();
-	Shader* shader = Shader::Get("phong");
-	if (!shader)
-		return;
+void loadTextures(Shader* shader, GTR::Material* material) {
 	Texture* texture = material->color_texture.texture;
 	if (!texture)
 		texture = Texture::getWhiteTexture();
 	Texture* emissive_texture = material->emissive_texture.texture;
 	if (!emissive_texture)
 		emissive_texture = Texture::getWhiteTexture();
+	Texture* occlusion_texture = material->occlusion_texture.texture;
+	if (!occlusion_texture)
+		occlusion_texture = Texture::getWhiteTexture();
+	Texture* metallic_roughness_texture = material->metallic_roughness_texture.texture;
+	if (!metallic_roughness_texture)
+		metallic_roughness_texture = Texture::getWhiteTexture();
 
 	shader->enable();
+	shader->setUniform("u_texture", texture, 0);
+	shader->setUniform("u_emissive_texture", emissive_texture, 1);
+	shader->setUniform("u_occlusion_texture", occlusion_texture, 2);
+	shader->setUniform("u_metallic_roughness_texture", metallic_roughness_texture, 3);
+	shader->setUniform("u_emissive_factor", material->emissive_factor);
+}
 
-	//upload uniforms
+//renders a mesh given its transform and material
+void Renderer::renderMeshWithMaterial(const Matrix44 model, Mesh* mesh, GTR::Material* material, Camera* camera)
+{
+	if (!initRender(material, mesh))
+		return;
+
+	float time = GetTickCount64();
+	Shader* shader = Shader::Get("phong");
+	if (!shader)
+		return;
+	
+	loadTextures(shader, material);
 	camera->setUniforms(shader);
 	shader->setUniform("u_model", model);
 	shader->setUniform("u_time", time);
 	material->setUniforms(shader);
-	shader->setUniform("u_texture", texture, 0);
-	shader->setUniform("u_emissive_texture", emissive_texture, 1);
-	shader->setUniform("u_emissive_factor", material->emissive_factor);
+	
 
 
 	std::vector< LightEntity*> lights = GTR::Scene::instance->getLights();
